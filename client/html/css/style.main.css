@@ -1,0 +1,16 @@
+#form {
+	position: absolute;
+	top: 100;
+	left: 100;
+	width: 180px;
+	background-color: rgba(0, 0, 0, 0.39);	
+	padding: 20px;
+	color: white;
+}
+
+.button {
+	width: 150px;
+	background-color: #808080;
+	text-align: center;
+	margin-top: 10px;
+}

@@ -1,0 +1,48 @@
+attachObjectToPlayer<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+        <link rel="stylesheet" href="css/style.main.css">
+    </head>
+        
+    <body>
+        <div id="form">
+            <div>Object name:</div>
+            <div><input type="text" v-model="objectName"></div>
+            
+            <div>Bone id:</div>
+            <div><input type="text" v-model="boneId"></div>
+
+            <div>Position X:</div>
+            <div><input type="text" v-model="position.x"></div>
+
+            <div>Position Y:</div>
+            <div><input type="text" v-model="position.y"></div>
+
+            <div>Position Z:</div>
+            <div><input type="text" v-model="position.z"></div>
+
+            <div>Rotation X:</div>
+            <div><input type="text" v-model="rotation.x"></div>
+
+            <div>Rotation Y:</div>
+            <div><input type="text" v-model="rotation.y"></div>
+
+            <div>Rotation Z:</div>
+            <div><input type="text" v-model="rotation.z"></div>
+
+            <div class="button" @click="attachObject()">Attach object</div>
+            <div class="button" @click="detachObject()">Detach object</div>
+
+            <div>Animation dictionary:</div>
+            <div><input type="text" v-model="animationDict"></div>
+
+            <div>Animation name:</div>
+            <div><input type="text" v-model="animationName"></div>
+
+            <div class="button" @click="changeAnimation()">Change animation</div>
+            <div class="button" @click="resetAnimation()">Reset animation</div>
+        </div>
+    </body>
+
+    <script src="script/controller.js"></script>
+</html>
