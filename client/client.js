@@ -1,19 +1,14 @@
 ﻿import natives from 'natives';
 import alt from 'alt';
+import registeredObjects from 'client/objects';
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 const OBJECT_RANGE = 30;
 const CHECK_INTERVAL = 1000;
 const CURSOR_TOGGLE_KEY = 122; // F11
 
-const BONEID_RIGHT_HAND = 57005;
-
-const objects = {
-    'phone': { objectName: 'p_amb_phone_01', boneId: BONEID_RIGHT_HAND, position: { x: 0.15, y: 0.0, z: -0.043, }, rotation: { x: 15.0, y: 80.0, z: 150 } }
-};
-
 if (DEBUG_MODE) {
-    var mainView = new alt.WebView('http://resources/SquizzorObjectAttacher/client/html/index.html');
+    var mainView = new alt.WebView('http://resource/client/html/index.html');
 }
 
 var currentExistingObjects = [];
@@ -25,16 +20,14 @@ function toggleCursor() {
     cursorActive = !cursorActive;
 }
 
-function getObjectData(objectName) {
-    return objects[objectName];
-}
-
 function removeObjectFromPlayer(player) {
     var object = currentExistingObjects[player.id];
-    if (object) {
+    if (object && natives.doesEntityExist(object)) {
         natives.detachEntity(object, true, true);
         natives.deleteObject(object);
         currentExistingObjects[player.id] = null;
+        // Show weapon again
+        natives.setPedCurrentWeaponVisible(player.scriptID, true, true, true, true);
     }
 }
 
@@ -50,10 +43,27 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
     
     var boneIndex = natives.getPedBoneIndex(player.scriptID, boneId); 
 
-    natives.attachEntityToEntity(newObject, player.scriptID, boneIndex, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, 
-        false, false, false, false, 1, true);  
+    if (newObject) {
+        // Hide weapon before attaching object
+        natives.setPedCurrentWeaponVisible(player.scriptID, false, true, true, true);
 
-    currentExistingObjects[player.id] = newObject;
+        natives.attachEntityToEntity(newObject, player.scriptID, boneIndex, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, 
+            false, false, false, false, 1, true);  
+
+        currentExistingObjects[player.id] = newObject;
+    } else {
+        console.log('[ObjectAttacher] Object is null: ' + objectName)
+    }
+}
+
+function attachRegisteredObjectToPlayer(player, objectName) {
+    if (registeredObjects[objectName]) {
+        var objectData = registeredObjects[objectName];
+        attachObjectToPlayer(player, objectData.boneId, objectData.objectName, objectData.position.x, objectData.position.y, objectData.position.z, 
+            objectData.rotation.x, objectData.rotation.y, objectData.rotation.z);
+    } else {
+        console.log('[ObjectAttacher] Object is not registered: ' + objectName);
+    }
 }
 
 function playAnimationOnLocalPlayer(animDictionary, animationName) {
@@ -80,17 +90,16 @@ alt.setInterval(() => {
             return;
         }
             
-        var objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');      
+        var objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');
+
         if (objectOfRemotePlayer) {
             var isRemotePlayerInRange = remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
 
             // Object not created yet?
             if (!currentExistingObjects[remotePlayer.id]) {
                 if (isRemotePlayerInRange) {
-                    var objectData = getObjectData(objectOfRemotePlayer);
                     // Attach object to remote player
-                    attachObjectToPlayer(remotePlayer, objectData.boneId, objectData.objectName, objectData.position.x, objectData.position.y, objectData.position.z,
-                        objectData.rotation.x, objectData.rotation.y, objectData.rotation.z);
+                    attachRegisteredObjectToPlayer(remotePlayer, objectOfRemotePlayer);
                 }
             } else {
                 // Players is holding object, but is not in range anymore
@@ -99,18 +108,14 @@ alt.setInterval(() => {
                 }
             }
         } else {
-            // Remove object (if exists)
+            // Remove object, if player was holding one before
             removeObjectFromPlayer(remotePlayer);
         }
     });
 }, CHECK_INTERVAL);
 
 alt.on('objectAttacher:attachObject', (objectName) => {
-    var objectData = getObjectData(objectName);
-
-    attachObjectToPlayer(alt.Player.local, objectData.boneId, objectData.objectName, objectData.position.x, objectData.position.y, objectData.position.z, 
-        objectData.rotation.x, objectData.rotation.y, objectData.rotation.z);
-   
+    attachRegisteredObjectToPlayer(alt.Player.local, objectName);
     alt.emitServer('objectAttacher:attachedObject', objectName);
 });
 
