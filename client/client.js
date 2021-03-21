@@ -8,7 +8,7 @@ const CHECK_INTERVAL = 1000;
 const CURSOR_TOGGLE_KEY = 122; // F11
 
 if (DEBUG_MODE) {
-    var mainView = new alt.WebView('http://resource/client/html/index.html');
+    var mainView = new alt.WebView('/resource/client/html/index.html');
 }
 
 var currentExistingObjects = [];
