@@ -1,15 +1,79 @@
+* {
+	font-family: Verdana;
+	font-size: 11px;
+}
+
 #form {
 	position: absolute;
-	top: 100;
-	left: 100;
-	width: 180px;
-	background-color: rgba(0, 0, 0, 0.39);	
+	top: 20;
+	left: 20;
+	width: 220px;
+	background-color: rgba(0, 0, 0, 0.521);	
 	padding: 20px;
 	color: white;
+	border-radius: 10px;
+}
+
+#form div {
+	margin-bottom: 5px;
+}
+
+#form input, select, textarea {
+	border: 1px solid white;
+	border-radius: 5px;
+	width: 220px;
+	resize: none;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tab {
+    width: 48%;
+	text-align: center;
+	font-weight: bold;
+}
+
+.tab-active {
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-top: 1px solid white;
+	border-left: 1px solid white;
+	border-right: 1px solid white;
+}
+
+.tab-content {
+	height: 450px;
+}
+
+.slider {
+	width: 200px;
+	height: 10px;
+	-webkit-appearance: none; 
+	border-radius: 5px;  
+	margin-bottom: 5px;
+}
+
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	border-radius: 50%; 
+	width: 14px;
+	height: 12px;
+	background: rgb(77, 77, 255);
+	cursor: pointer; 
+}
+
+.title {
+	font-weight: bold;
+	font-size: 13px;
+	border-bottom: 1px solid white;
 }
 
 .button {
-	width: 150px;
+	width: 100%;
 	background-color: #808080;
 	text-align: center;
 	margin-top: 10px;

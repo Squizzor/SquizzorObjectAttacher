@@ -6,41 +6,84 @@
         
     <body>
         <div id="form">
-            <div>Object name:</div>
-            <div><input type="text" v-model="objectName"></div>
+            <div class="title">Squizzor Object Attacher</div>
+
+            <div>Registered objects:</div>
+            <div>
+                <select v-model="selectedRegisteredObject" @change="onRegisteredObjectChange()">
+                    <option v-for="objectKey in Object.keys(registeredObjects)" :value="objectKey">
+                      {{ objectKey }}
+                    </option>
+                </select>
+            </div>       
             
-            <div>Bone id:</div>
-            <div><input type="text" v-model="boneId"></div>
+            <div></div>
 
-            <div>Position X:</div>
-            <div><input type="text" v-model="position.x"></div>
+            <div class="tabs">
+                <div class="tab" :class="{ 'tab-active': activeTab == 1 }" @click="setActiveTab(1)">Attachment</div>
+                <div class="tab" :class="{ 'tab-active': activeTab == 2 }" @click="setActiveTab(2)">Animation</div>
+            </div>
 
-            <div>Position Y:</div>
-            <div><input type="text" v-model="position.y"></div>
+            <div v-if="activeTab == 1" class="tab-content">
+                <div class="title">Attachment info</div>
 
-            <div>Position Z:</div>
-            <div><input type="text" v-model="position.z"></div>
+                <div>Object name:</div>
+                <div><input type="text" v-model="objectName" @change="onObjectChange()"></div>
+                
+                <div>Bone id:</div>
+                <div><input type="text" v-model="boneId" @change="onObjectChange()"></div>
+    
+                <div>Position X:</div>
+                <input type="range" class="slider" v-model="position.x" @change="onObjectChange()" :min="positionSliderMin" :max="positionSliderMax" :step="positionSliderStep">
+                <div><input type="text" v-model="position.x" @change="onObjectChange()"></div>
+    
+                <div>Position Y:</div>
+                <input type="range" class="slider" v-model="position.y" @change="onObjectChange()" :min="positionSliderMin" :max="positionSliderMax" :step="positionSliderStep">
+                <div><input type="text" v-model="position.y" @change="onObjectChange()"></div>
+    
+                <div>Position Z:</div>
+                <input type="range" class="slider" v-model="position.z" @change="onObjectChange()" :min="positionSliderMin" :max="positionSliderMax" :step="positionSliderStep">
+                <div><input type="text" v-model="position.z" @change="onObjectChange()"></div>
+    
+                <div>Rotation X:</div>
+                <input type="range" class="slider" v-model="rotation.x" @change="onObjectChange()" :min="rotationSliderMin" :max="rotationSliderMax" :step="rotationSliderStep">
+                <div><input type="text" v-model="rotation.x" @change="onObjectChange()"></div>
+    
+                <div>Rotation Y:</div>
+                <input type="range" class="slider" v-model="rotation.y" @change="onObjectChange()" :min="rotationSliderMin" :max="rotationSliderMax" :step="rotationSliderStep">
+                <div><input type="text" v-model="rotation.y" @change="onObjectChange()"></div>
+    
+                <div>Rotation Z:</div>
+                <input type="range" class="slider" v-model="rotation.z" @change="onObjectChange()" :min="rotationSliderMin" :max="rotationSliderMax" :step="rotationSliderStep">
+                <div><input type="text" v-model="rotation.z" @change="onObjectChange()"></div>
+            </div>
 
-            <div>Rotation X:</div>
-            <div><input type="text" v-model="rotation.x"></div>
+            <div v-if="activeTab == 2" class="tab-content">
+                <div class="title">Player animation</div>
 
-            <div>Rotation Y:</div>
-            <div><input type="text" v-model="rotation.y"></div>
+                <div>Animation dictionary:</div>
+                <div><input type="text" v-model="animationDict" @change="onAnimationChange()"></div>
+    
+                <div>Animation name:</div>
+                <div><input type="text" v-model="animationName" @change="onAnimationChange()"></div>
+    
+                <div>Animation flag:</div>
+                <div><input type="text" v-model="animationFlag" @change="onAnimationChange()"></div>
+    
+                <div class="button" @click="changeAnimation()">Change animation</div>
+                <div class="button" @click="resetAnimation()">Reset animation</div>
+            </div>
 
-            <div>Rotation Z:</div>
-            <div><input type="text" v-model="rotation.z"></div>
+            <div>Object key (has to be unique):</div>
+            <div><input type="text" v-model="objectKey" @change="onObjectChange()"></div>
 
-            <div class="button" @click="attachObject()">Attach object</div>
+            <div>Object string:</div>
+            <div class="button"><textarea type="text" v-model="objectString" id="object-string" readonly></textarea></div>
+
+            <div class="button" @click="copyObjectString()">Copy object string</div>
             <div class="button" @click="detachObject()">Detach object</div>
 
-            <div>Animation dictionary:</div>
-            <div><input type="text" v-model="animationDict"></div>
 
-            <div>Animation name:</div>
-            <div><input type="text" v-model="animationName"></div>
-
-            <div class="button" @click="changeAnimation()">Change animation</div>
-            <div class="button" @click="resetAnimation()">Reset animation</div>
         </div>
     </body>
 

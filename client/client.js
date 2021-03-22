@@ -7,10 +7,6 @@ const OBJECT_RANGE = 30;
 const CHECK_INTERVAL = 1000;
 const CURSOR_TOGGLE_KEY = 122; // F11
 
-if (DEBUG_MODE) {
-    var mainView = new alt.WebView('/resource/client/html/index.html');
-}
-
 var currentExistingObjects = [];
 var cursorActive = false;
 
@@ -66,16 +62,20 @@ function attachRegisteredObjectToPlayer(player, objectName) {
     }
 }
 
-function playAnimationOnLocalPlayer(animDictionary, animationName) {
-    natives.requestAnimDict(animDictionary);
+function playAnimationOnLocalPlayer(animDictionary, animationName, animationFlag) {
+    if (natives.doesAnimDictExist(animDictionary)) {
+        natives.requestAnimDict(animDictionary);
 
-    const animDictLoadInterval = alt.setInterval(() => {
-        if (natives.hasAnimDictLoaded(animDictionary)) {
-            alt.clearInterval(animDictLoadInterval)
-        } 
-    }, 10)
+        const animDictLoadInterval = alt.setInterval(() => {
+            if (natives.hasAnimDictLoaded(animDictionary)) {
+                alt.clearInterval(animDictLoadInterval)
+            } 
+        }, 10)
 
-    natives.taskPlayAnim(alt.Player.local.scriptID, animDictionary, animationName, 8.0, 8.0, -1, 50, 1.0, false, false, false);
+        natives.taskPlayAnim(alt.Player.local.scriptID, animDictionary, animationName, 8.0, 8.0, -1, animationFlag, 1.0, false, false, false);
+    } else {
+        console.log('[ObjectAttacher] Animation dictionary does not exist');
+    }
 }
 
 function resetAnimationOnLocalPlayer() {
@@ -125,6 +125,16 @@ alt.on('objectAttacher:detachObject', () => {
 });
 
 if (DEBUG_MODE) {
+    var mainView = new alt.WebView('/resource/client/html/index.html');
+
+    alt.setInterval(() => {
+        natives.invalidateIdleCam();
+    }, 2000);
+
+    mainView.on('objectAttacher:debug:requestRegisteredObjects', () => {
+        mainView.emit('objectAttacher:debug:setRegisteredObjects', registeredObjects);
+    });
+
     mainView.on('objectAttacher:debug:attachObject', (objectName, boneId, positionX, positionY, positionZ, rotationX, rotationY, rotationZ) => {
         attachObjectToPlayer(alt.Player.local, boneId, objectName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ);
     });
@@ -133,12 +143,18 @@ if (DEBUG_MODE) {
         removeObjectFromPlayer(alt.Player.local);
     });
 
-    mainView.on('objectAttacher:debug:changeAnimation', (animationDict, animationName) => {
-        playAnimationOnLocalPlayer(animationDict, animationName);
+    mainView.on('objectAttacher:debug:changeAnimation', (animationDict, animationName, animationFlag) => {
+        playAnimationOnLocalPlayer(animationDict, animationName, animationFlag);
     });
 
     mainView.on('objectAttacher:debug:resetAnimation', () => {
         resetAnimationOnLocalPlayer();
+    });
+
+    alt.on('consoleCommand', (command, ...args) => {
+        if (command === 'objectattacher') {
+            mainView.isVisible = !mainView.isVisible;
+        }
     });
 
     alt.on("keyup", function (key) {
