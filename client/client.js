@@ -32,6 +32,14 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
     removeObjectFromPlayer(player);
 
     var hashOfProp = natives.getHashKey(objectName);
+
+    natives.requestModel(hashOfProp);
+    const modelLoadInterval = alt.setInterval(() => {
+        if (natives.hasModelLoaded(hashOfProp)) {
+            alt.clearInterval(modelLoadInterval)
+        } 
+    }, 100);
+
     var newObject = natives.createObject(hashOfProp, player.pos.x, player.pos.y, player.pos.z, true, true, true);
 
     // Release memory for model
@@ -70,7 +78,7 @@ function playAnimationOnLocalPlayer(animDictionary, animationName, animationFlag
             if (natives.hasAnimDictLoaded(animDictionary)) {
                 alt.clearInterval(animDictLoadInterval)
             } 
-        }, 10)
+        }, 100)
 
         natives.taskPlayAnim(alt.Player.local.scriptID, animDictionary, animationName, 8.0, 8.0, -1, animationFlag, 1.0, false, false, false);
     } else {
@@ -93,7 +101,7 @@ alt.setInterval(() => {
         var objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');
 
         if (objectOfRemotePlayer) {
-            var isRemotePlayerInRange = remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
+            var isRemotePlayerInRange = remotePlayer.scriptID && remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
 
             // Object not created yet?
             if (!currentExistingObjects[remotePlayer.id]) {
