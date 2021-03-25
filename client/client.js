@@ -24,6 +24,15 @@ function toggleCursor() {
     }
 }
 
+function getRegisteredObject(objectName) {
+    if (registeredObjects[objectName]) {
+        return registeredObjects[objectName];
+    } else {
+        outputMessage('Object is not registered: ' + objectName);
+        return null;
+    }    
+}
+
 function removeObjectFromPlayer(player) {
     try {
         var object = currentExistingObjects[player.id];
@@ -76,13 +85,18 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
     }
 }
 
-function attachRegisteredObjectToPlayer(player, objectName) {
-    if (registeredObjects[objectName]) {
-        var objectData = registeredObjects[objectName];
+function attachRegisteredObjectToPlayer(player, objectData) {
+    if (objectData) {
         attachObjectToPlayer(player, objectData.boneId, objectData.objectName, objectData.position.x, objectData.position.y, objectData.position.z, 
             objectData.rotation.x, objectData.rotation.y, objectData.rotation.z);
-    } else {
-        outputMessage('Object is not registered: ' + objectName);
+    } 
+}
+
+function resetAnimationOnLocalPlayer() {
+    try {
+        natives.clearPedTasks(alt.Player.local.scriptID);
+    } catch(e) {
+        outputMessage(e.message);
     }
 }
 
@@ -106,11 +120,45 @@ function playAnimationOnLocalPlayer(animDictionary, animationName, animationFlag
     }
 }
 
-function resetAnimationOnLocalPlayer() {
-    try {
-        natives.clearPedTasks(alt.Player.local.scriptID);
-    } catch(e) {
-        outputMessage(e.message);
+function playAnimationSequenceOnLocalPlayer(enterAnimation, exitAnimation, sequenceFinishedCallback) {
+    let enterAnimationIsSet = enterAnimation && enterAnimation.dict && enterAnimation.name;
+    let exitAnimationIsSet = exitAnimation && exitAnimation.dict && exitAnimation.name;
+
+    let firstAnimation = null;
+    let secondAnimation = null; 
+
+    // Only play animations that are completely set
+    if (enterAnimationIsSet) {
+        firstAnimation = enterAnimation;
+        if (exitAnimationIsSet) {
+            secondAnimation = exitAnimation; 
+        }
+    } else if(exitAnimationIsSet) {
+        firstAnimation = exitAnimation;
+    }
+
+    if (firstAnimation) {
+        resetAnimationOnLocalPlayer();
+
+        playAnimationOnLocalPlayer(firstAnimation.dict, firstAnimation.name, firstAnimation.flag);
+
+        if (firstAnimation.durationMs && firstAnimation.durationMs > 0) {
+            alt.setTimeout(() => {
+                if (secondAnimation) {
+                    playAnimationOnLocalPlayer(secondAnimation.dict, secondAnimation.name, secondAnimation.flag);
+
+                    if (secondAnimation.durationMs && secondAnimation.durationMs > 0) {
+                        alt.setTimeout(() => {
+                            resetAnimationOnLocalPlayer();
+                            sequenceFinishedCallback()
+                        }, secondAnimation.durationMs)
+                    }
+                } else {
+                    resetAnimationOnLocalPlayer();
+                    sequenceFinishedCallback();
+                }
+            }, firstAnimation.durationMs)
+        }
     }
 }
 
@@ -132,7 +180,7 @@ alt.setInterval(() => {
                 if (!currentExistingObjects[remotePlayer.id]) {
                     if (isRemotePlayerInRange) {
                         // Attach object to remote player
-                        attachRegisteredObjectToPlayer(remotePlayer, objectOfRemotePlayer);
+                        attachRegisteredObjectToPlayer(remotePlayer, getRegisteredObject(objectOfRemotePlayer));
                     }
                 } else {
                     // Players is holding object, but is not in range anymore
@@ -150,9 +198,26 @@ alt.setInterval(() => {
     }
 }, CHECK_INTERVAL);
 
+alt.on('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnimation) => {
+    var registeredObject = getRegisteredObject(objectName);
+    if (registeredObject) {
+        attachRegisteredObjectToPlayer(alt.Player.local, registeredObject);
+        alt.emitServer('objectAttacher:attachedObject', objectName);
+        playAnimationSequenceOnLocalPlayer(registeredObject.enterAnimation, registeredObject.exitAnimation, () => {
+            if (detachObjectAfterAnimation) {
+                removeObjectFromPlayer(alt.Player.local);
+                alt.emitServer('objectAttacher:detachedObject');
+            }
+        });
+    }
+});
+
 alt.on('objectAttacher:attachObject', (objectName) => {
-    attachRegisteredObjectToPlayer(alt.Player.local, objectName);
-    alt.emitServer('objectAttacher:attachedObject', objectName);
+    var registeredObject = getRegisteredObject(objectName);
+    if (registeredObject) {
+        attachRegisteredObjectToPlayer(alt.Player.local, registeredObject);
+        alt.emitServer('objectAttacher:attachedObject', objectName);
+    }
 });
 
 alt.on('objectAttacher:detachObject', () => {
@@ -179,8 +244,22 @@ if (DEBUG_MODE) {
         removeObjectFromPlayer(alt.Player.local);
     });
 
-    mainView.on('objectAttacher:debug:changeAnimation', (animationDict, animationName, animationFlag) => {
-        playAnimationOnLocalPlayer(animationDict, animationName, animationFlag);
+    mainView.on('objectAttacher:debug:playAnimation', (animation) => {
+        playAnimationOnLocalPlayer(animation.dict, animation.name, animation.flag);
+
+        if (animation.durationMs && animation.durationMs > 0) {
+            alt.setTimeout(() => {
+                resetAnimationOnLocalPlayer();
+            }, animation.durationMs)
+        }
+    });
+
+    mainView.on('objectAttacher:debug:playSequence', (enterAnimation, exitAnimation, detachObjectAfterSequence) => {
+        playAnimationSequenceOnLocalPlayer(enterAnimation, exitAnimation, () => {
+            if (detachObjectAfterSequence) {
+                removeObjectFromPlayer(alt.Player.local);
+            }
+        })
     });
 
     mainView.on('objectAttacher:debug:resetAnimation', () => {
