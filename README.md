@@ -2,7 +2,7 @@
 
 
 ## About
-This alt:V resource allows you to easily attach to players for example a phone, food or a bottle. The attachment will also be synced with all near by players.
+This alt:V resource allows you to easily attach objects to players for example a phone, food or a bottle. The attachment will also be synced with all near by players.
 
 ![Debug form](https://github.com/Squizzor/SquizzorObjectAttacher/blob/master/images/preview.png)
 
