@@ -92,6 +92,18 @@ function attachRegisteredObjectToPlayer(player, objectData) {
     } 
 }
 
+function attachRegisteredObjectToLocalPlayerSynced(objectName, objectData) {
+    if (objectData) {
+        attachRegisteredObjectToPlayer(alt.Player.local, objectData);
+        alt.emitServer('objectAttacher:attachedObject', objectName);
+    }
+}
+
+function detachObjectFromLocalPlayerSynced() {
+    removeObjectFromPlayer(alt.Player.local);
+    alt.emitServer('objectAttacher:detachedObject'); 
+}
+
 function resetAnimationOnLocalPlayer() {
     try {
         natives.clearPedTasks(alt.Player.local.scriptID);
@@ -201,28 +213,29 @@ alt.setInterval(() => {
 alt.on('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnimation) => {
     var registeredObject = getRegisteredObject(objectName);
     if (registeredObject) {
-        attachRegisteredObjectToPlayer(alt.Player.local, registeredObject);
-        alt.emitServer('objectAttacher:attachedObject', objectName);
+        attachRegisteredObjectToLocalPlayerSynced(objectName, registeredObject);
         playAnimationSequenceOnLocalPlayer(registeredObject.enterAnimation, registeredObject.exitAnimation, () => {
             if (detachObjectAfterAnimation) {
-                removeObjectFromPlayer(alt.Player.local);
-                alt.emitServer('objectAttacher:detachedObject');
+                detachObjectFromLocalPlayerSynced();
             }
         });
     }
 });
 
 alt.on('objectAttacher:attachObject', (objectName) => {
-    var registeredObject = getRegisteredObject(objectName);
-    if (registeredObject) {
-        attachRegisteredObjectToPlayer(alt.Player.local, registeredObject);
-        alt.emitServer('objectAttacher:attachedObject', objectName);
-    }
+    attachRegisteredObjectToLocalPlayerSynced(objectName, getRegisteredObject(objectName));
+});
+
+alt.onServer('objectAttacher:attachObject', (objectName) => {
+    attachRegisteredObjectToLocalPlayerSynced(objectName, getRegisteredObject(objectName));
 });
 
 alt.on('objectAttacher:detachObject', () => {
-    removeObjectFromPlayer(alt.Player.local);
-    alt.emitServer('objectAttacher:detachedObject');
+    detachObjectFromLocalPlayerSynced();
+});
+
+alt.onServer('objectAttacher:detachObject', () => {
+    detachObjectFromLocalPlayerSynced();
 });
 
 if (DEBUG_MODE) {
