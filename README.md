@@ -10,7 +10,7 @@ This alt:V resource allows you to easily attach to players for example a phone, 
 Create a new folder in the server resources folder and copy the files into it. Add the folder name to your resources section of your server.cfg.
 
 ## Register an object
-Before you can attach an object, it has to be in the registered objects array (**client/objects.js**). There are a few objects in it, so please check if the desired object was already added. If its not, the easiest way to add a new one is to use the debug form. This form automatically shows up, if the DEBUG_MODE constant is set to true (client/client.js).
+Before you can attach an object, it has to be in the registered objects array (**client/objects.js**). There are already a few objects in it, so please check if the desired object was already added. If its not, the easiest way to add a new one is to use the debug form. This form automatically shows up, if the **DEBUG_MODE** constant is set to true (client/client.js).
 
 #### Debug form
 
@@ -20,7 +20,7 @@ In the debug form you can try out new objects and change their position easily i
 
 When using an animation, its advised to use 50 as animation flag, cause it freezes the animation at last frame making it easier to adjust the object position.
 
-Please also note the options on the animation tab that allow you to avoid animation autoplay on parameter change or keep the object after animation finishes.
+Please also note the options on the animation tab that allow you to avoid animation autoplay on parameter change or keeping the object after an animation finishes.
 
 Type "objectattacher" into the console to hide the debug form.
 
