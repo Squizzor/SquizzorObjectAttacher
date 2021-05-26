@@ -4,7 +4,7 @@
 ## About
 This alt:V resource allows you to easily attach to players for example a phone, food or a bottle. The attachment will also be synced with all near by players.
 
-![Debug form](https://github.com/Squizzor/SquizzorObjectAttacher/images/preview.png)
+![Debug form](https://github.com/Squizzor/SquizzorObjectAttacher/blob/master/images/preview.png)
 
 ## How to use
 Create a new folder in the server resources folder and copy the files into it. Add the folder name to your resources section of your server.cfg.
@@ -14,7 +14,7 @@ Before you can attach an object, it has to be in the registered objects array (*
 
 #### Debug form
 
-![Debug form](https://github.com/Squizzor/SquizzorObjectAttacher/images/debug.png)
+![Debug form](https://github.com/Squizzor/SquizzorObjectAttacher/blob/master/images/debug.png)
 
 In the debug form you can try out new objects and change their position easily ingame. You can also do this in combination with an animation. To access the controls, the cursor needs to be activated. The default key for that is F11 (can be changed - see **Configuration**).
 
