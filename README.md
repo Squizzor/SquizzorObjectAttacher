@@ -38,14 +38,14 @@ If you completely set up a new object, you can just type in an object key at the
 If you want to attach or detach an object, you can either do it on server side or on client side with the following code:
 
 #### Client side
-alt.emit('objectAttacher::attachObject', 'phone');
+alt.emit('objectAttacher:attachObject', 'phone');
 
-alt.emit('objectAttacher::detachObject');
+alt.emit('objectAttacher:detachObject');
 
 #### Server side
-alt.emitClient(playerObject, 'objectAttacher::attachObject', 'phone');
+alt.emitClient(playerObject, 'objectAttacher:attachObject', 'phone');
 
-alt.emitClient(playerObject, 'objectAttacher::detachObject');
+alt.emitClient(playerObject, 'objectAttacher:detachObject');
 
 ## Configuration
 
