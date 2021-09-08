@@ -1,4 +1,4 @@
-﻿import natives from 'natives';
+import natives from 'natives';
 import alt from 'alt';
 import registeredObjects from 'client/objects';
 
@@ -19,7 +19,7 @@ function toggleCursor() {
         alt.showCursor(!cursorActive);
         alt.toggleGameControls(cursorActive);
         cursorActive = !cursorActive;
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }
@@ -30,7 +30,7 @@ function getRegisteredObject(objectName) {
     } else {
         outputMessage('Object is not registered: ' + objectName);
         return null;
-    }    
+    }
 }
 
 function removeObjectFromPlayer(player) {
@@ -43,12 +43,22 @@ function removeObjectFromPlayer(player) {
             // Show weapon again
             natives.setPedCurrentWeaponVisible(player.scriptID, true, true, true, true);
         }
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }
 
-function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ) {
+function attachObjectToPlayer(
+    player,
+    boneId,
+    objectName,
+    positionX,
+    positionY,
+    positionZ,
+    rotationX,
+    rotationY,
+    rotationZ
+) {
     try {
         // Remove existing object (if exists)
         removeObjectFromPlayer(player);
@@ -58,38 +68,62 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
         natives.requestModel(hashOfProp);
         const modelLoadInterval = alt.setInterval(() => {
             if (natives.hasModelLoaded(hashOfProp)) {
-                alt.clearInterval(modelLoadInterval)
-            } 
+                alt.clearInterval(modelLoadInterval);
+            }
         }, 100);
 
         var newObject = natives.createObject(hashOfProp, player.pos.x, player.pos.y, player.pos.z, true, true, true);
 
         // Release memory for model
         natives.setModelAsNoLongerNeeded(hashOfProp);
-        
-        var boneIndex = natives.getPedBoneIndex(player.scriptID, boneId); 
+
+        var boneIndex = natives.getPedBoneIndex(player.scriptID, Number(boneId));
 
         if (newObject) {
             // Hide weapon before attaching object
             natives.setPedCurrentWeaponVisible(player.scriptID, false, true, true, true);
-
-            natives.attachEntityToEntity(newObject, player.scriptID, boneIndex, positionX, positionY, positionZ, rotationX, rotationY, rotationZ, 
-                false, false, false, false, 1, true);  
+            console.log(boneId, objectName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ);
+            natives.attachEntityToEntity(
+                newObject, // 0
+                player.scriptID, // 1
+                boneIndex, // 2
+                Number(positionX), // 3
+                Number(positionY), // 4
+                Number(positionZ), // 5
+                Number(rotationX), // 6
+                Number(rotationY), // 7
+                Number(rotationZ), // 8
+                false, // 9
+                false, // 10
+                false, // 11
+                false, // 12
+                1, // 13
+                true // 14
+            );
 
             currentExistingObjects[player.id] = newObject;
         } else {
             outputMessage('Object is null: ' + objectName);
         }
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }
 
 function attachRegisteredObjectToPlayer(player, objectData) {
     if (objectData) {
-        attachObjectToPlayer(player, objectData.boneId, objectData.objectName, objectData.position.x, objectData.position.y, objectData.position.z, 
-            objectData.rotation.x, objectData.rotation.y, objectData.rotation.z);
-    } 
+        attachObjectToPlayer(
+            player,
+            objectData.boneId,
+            objectData.objectName,
+            objectData.position.x,
+            objectData.position.y,
+            objectData.position.z,
+            objectData.rotation.x,
+            objectData.rotation.y,
+            objectData.rotation.z
+        );
+    }
 }
 
 function attachRegisteredObjectToLocalPlayerSynced(objectName, objectData) {
@@ -99,15 +133,15 @@ function attachRegisteredObjectToLocalPlayerSynced(objectName, objectData) {
     }
 }
 
-function detachObjectFromLocalPlayerSynced() {
+function detachObjectFromLocalPlayerSynced(objectName) {
     removeObjectFromPlayer(alt.Player.local);
-    alt.emitServer('objectAttacher:detachedObject'); 
+    alt.emitServer('objectAttacher:detachedObject', objectName);
 }
 
 function resetAnimationOnLocalPlayer() {
     try {
         natives.clearPedTasks(alt.Player.local.scriptID);
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }
@@ -119,15 +153,27 @@ function playAnimationOnLocalPlayer(animDictionary, animationName, animationFlag
 
             const animDictLoadInterval = alt.setInterval(() => {
                 if (natives.hasAnimDictLoaded(animDictionary)) {
-                    alt.clearInterval(animDictLoadInterval)
-                } 
-            }, 100)
+                    alt.clearInterval(animDictLoadInterval);
+                }
+            }, 100);
 
-            natives.taskPlayAnim(alt.Player.local.scriptID, animDictionary, animationName, 8.0, 8.0, -1, animationFlag, 1.0, false, false, false);
+            natives.taskPlayAnim(
+                alt.Player.local.scriptID,
+                animDictionary,
+                animationName,
+                8.0,
+                8.0,
+                -1,
+                Number(animationFlag),
+                1.0,
+                false,
+                false,
+                false
+            );
         } else {
             outputMessage('Animation dictionary does not exist');
         }
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }
@@ -137,15 +183,15 @@ function playAnimationSequenceOnLocalPlayer(enterAnimation, exitAnimation, seque
     let exitAnimationIsSet = exitAnimation && exitAnimation.dict && exitAnimation.name;
 
     let firstAnimation = null;
-    let secondAnimation = null; 
+    let secondAnimation = null;
 
     // Only play animations that are completely set
     if (enterAnimationIsSet) {
         firstAnimation = enterAnimation;
         if (exitAnimationIsSet) {
-            secondAnimation = exitAnimation; 
+            secondAnimation = exitAnimation;
         }
-    } else if(exitAnimationIsSet) {
+    } else if (exitAnimationIsSet) {
         firstAnimation = exitAnimation;
     }
 
@@ -162,14 +208,14 @@ function playAnimationSequenceOnLocalPlayer(enterAnimation, exitAnimation, seque
                     if (secondAnimation.durationMs && secondAnimation.durationMs > 0) {
                         alt.setTimeout(() => {
                             resetAnimationOnLocalPlayer();
-                            sequenceFinishedCallback()
-                        }, secondAnimation.durationMs)
+                            sequenceFinishedCallback();
+                        }, secondAnimation.durationMs);
                     }
                 } else {
                     resetAnimationOnLocalPlayer();
                     sequenceFinishedCallback();
                 }
-            }, firstAnimation.durationMs)
+            }, firstAnimation.durationMs);
         }
     }
 }
@@ -182,12 +228,13 @@ alt.setInterval(() => {
             if (remotePlayer.id == alt.Player.local.id) {
                 return;
             }
-                
+
             var objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');
-    
+
             if (objectOfRemotePlayer) {
-                var isRemotePlayerInRange = remotePlayer.scriptID && remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
-    
+                var isRemotePlayerInRange =
+                    remotePlayer.scriptID && remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
+
                 // Object not created yet?
                 if (!currentExistingObjects[remotePlayer.id]) {
                     if (isRemotePlayerInRange) {
@@ -196,7 +243,7 @@ alt.setInterval(() => {
                     }
                 } else {
                     // Players is holding object, but is not in range anymore
-                    if(!isRemotePlayerInRange) {
+                    if (!isRemotePlayerInRange) {
                         removeObjectFromPlayer(remotePlayer);
                     }
                 }
@@ -205,7 +252,7 @@ alt.setInterval(() => {
                 removeObjectFromPlayer(remotePlayer);
             }
         });
-    } catch(e) {
+    } catch (e) {
         outputMessage(e.message);
     }
 }, CHECK_INTERVAL);
@@ -222,11 +269,23 @@ alt.on('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnim
     }
 });
 
-alt.on('objectAttacher:attachObject', (objectName) => {
+alt.onServer('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnimation = true) => {
+    var registeredObject = getRegisteredObject(objectName);
+    if (registeredObject) {
+        attachRegisteredObjectToLocalPlayerSynced(objectName, registeredObject);
+        playAnimationSequenceOnLocalPlayer(registeredObject.enterAnimation, registeredObject.exitAnimation, () => {
+            if (detachObjectAfterAnimation) {
+                detachObjectFromLocalPlayerSynced(objectName);
+            }
+        });
+    }
+});
+
+alt.on('objectAttacher:attachObject', objectName => {
     attachRegisteredObjectToLocalPlayerSynced(objectName, getRegisteredObject(objectName));
 });
 
-alt.onServer('objectAttacher:attachObject', (objectName) => {
+alt.onServer('objectAttacher:attachObject', objectName => {
     attachRegisteredObjectToLocalPlayerSynced(objectName, getRegisteredObject(objectName));
 });
 
@@ -240,7 +299,7 @@ alt.onServer('objectAttacher:detachObject', () => {
 
 if (DEBUG_MODE) {
     var mainView = new alt.WebView('/resource/client/html/index.html');
-
+    mainView.focus();
     alt.setInterval(() => {
         natives.invalidateIdleCam();
     }, 2000);
@@ -249,21 +308,34 @@ if (DEBUG_MODE) {
         mainView.emit('objectAttacher:debug:setRegisteredObjects', registeredObjects);
     });
 
-    mainView.on('objectAttacher:debug:attachObject', (objectName, boneId, positionX, positionY, positionZ, rotationX, rotationY, rotationZ) => {
-        attachObjectToPlayer(alt.Player.local, boneId, objectName, positionX, positionY, positionZ, rotationX, rotationY, rotationZ);
-    });
+    mainView.on(
+        'objectAttacher:debug:attachObject',
+        (objectName, boneId, positionX, positionY, positionZ, rotationX, rotationY, rotationZ) => {
+            attachObjectToPlayer(
+                alt.Player.local,
+                boneId,
+                objectName,
+                positionX,
+                positionY,
+                positionZ,
+                rotationX,
+                rotationY,
+                rotationZ
+            );
+        }
+    );
 
     mainView.on('objectAttacher:debug:detachObject', () => {
         removeObjectFromPlayer(alt.Player.local);
     });
 
-    mainView.on('objectAttacher:debug:playAnimation', (animation) => {
+    mainView.on('objectAttacher:debug:playAnimation', animation => {
         playAnimationOnLocalPlayer(animation.dict, animation.name, animation.flag);
 
         if (animation.durationMs && animation.durationMs > 0) {
             alt.setTimeout(() => {
                 resetAnimationOnLocalPlayer();
-            }, animation.durationMs)
+            }, animation.durationMs);
         }
     });
 
@@ -272,7 +344,7 @@ if (DEBUG_MODE) {
             if (detachObjectAfterSequence) {
                 removeObjectFromPlayer(alt.Player.local);
             }
-        })
+        });
     });
 
     mainView.on('objectAttacher:debug:resetAnimation', () => {
@@ -285,8 +357,8 @@ if (DEBUG_MODE) {
         }
     });
 
-    alt.on("keyup", function (key) {
-        if (key == CURSOR_TOGGLE_KEY) { 
+    alt.on('keyup', function(key) {
+        if (key == CURSOR_TOGGLE_KEY) {
             toggleCursor();
         }
     });
