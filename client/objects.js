@@ -5,7 +5,7 @@ const registeredObjects = {
         enterAnimation: {dict: 'cellphone@', name: 'cellphone_text_in', flag: 49, durationMs: 1000 },
         exitAnimation: {dict: 'cellphone@', name: 'cellphone_text_out', flag: 49, durationMs: 1000 } },
     'tablet': { objectName: 'prop_cs_tablet', boneId: 60309, position: { x: 0.03, y: -0.000, z: 0, }, rotation: { x: 10, y: 0, z: -10},
-        enterAnimation: {dict: 'amb@code_human_in_bus_passenger_idles@female@tablet@base', name: 'base', flag: 49, durationMs: 1000 },
+        enterAnimation: {dict: 'amb@code_human_in_bus_passenger_idles@female@tablet@base', name: 'base', flag: 49, durationMs: 0 },
         exitAnimation: {dict: '', name: '', flag: 49, durationMs: 0 } },
     'bottle': { objectName: 'prop_beer_bottle', boneId: 57005, position: { x: 0.13, y: -0.12, z: -0.05, }, rotation: { x: 100, y: -220, z: 180},
         enterAnimation: {dict: 'amb@world_human_drinking@beer@male@idle_a', name: 'idle_c', flag: 49, durationMs: 5000 },
