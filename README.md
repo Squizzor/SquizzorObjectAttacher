@@ -35,17 +35,35 @@ If you completely set up a new object, you can just type in an object key at the
 
 **!! A player can only hold one object at a time !!**
 
-If you want to attach or detach an object, you can either do it on server side or on client side with the following code:
+If you want to attach or detach an object, you can either do it on server or client side and you can decide whether you also want to play the corresponding animation sequence (enter + exit) or not.
+
+Example code:
 
 #### Client side
+```javascript
+// not animated
 alt.emit('objectAttacher:attachObject', 'phone');
 
+// animated 
+// (last parameter defines whether the object should be detached after the animation finishes)
+alt.emit('objectAttacher:attachObjectAnimated', 'phone', true);
+
+// will detach the object and reset all pending animations
 alt.emit('objectAttacher:detachObject');
+```
 
 #### Server side
+```javascript
+// not animated
 alt.emitClient(playerObject, 'objectAttacher:attachObject', 'phone');
 
+// animated
+// (last parameter defines whether the object should be detached after the animation finishes)
+alt.emitClient(playerObject, 'objectAttacher:attachObjectAnimated', 'phone', true);
+
+// will detach the object and reset all pending animations
 alt.emitClient(playerObject, 'objectAttacher:detachObject');
+```
 
 ## Configuration
 

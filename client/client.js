@@ -7,8 +7,8 @@ const OBJECT_RANGE = 30;
 const CHECK_INTERVAL = 1000;
 const CURSOR_TOGGLE_KEY = 122; // F11
 
-var currentExistingObjects = [];
-var cursorActive = false;
+let currentExistingObjects = [];
+let cursorActive = false;
 
 function outputMessage(message) {
     console.log('[ObjectAttacher] ' + message);
@@ -33,9 +33,17 @@ function getRegisteredObject(objectName) {
     }    
 }
 
+function resetAnimationOnLocalPlayer() {
+    try {
+        natives.clearPedTasks(alt.Player.local.scriptID);
+    } catch(e) {
+        outputMessage(e.message);
+    }
+}
+
 function removeObjectFromPlayer(player) {
     try {
-        var object = currentExistingObjects[player.id];
+        let object = currentExistingObjects[player.id];
         if (object && natives.doesEntityExist(object)) {
             natives.detachEntity(object, true, true);
             natives.deleteObject(object);
@@ -53,7 +61,7 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
         // Remove existing object (if exists)
         removeObjectFromPlayer(player);
 
-        var hashOfProp = natives.getHashKey(objectName);
+        let hashOfProp = natives.getHashKey(objectName);
 
         natives.requestModel(hashOfProp);
         const modelLoadInterval = alt.setInterval(() => {
@@ -62,12 +70,12 @@ function attachObjectToPlayer(player, boneId, objectName, positionX, positionY, 
             } 
         }, 100);
 
-        var newObject = natives.createObject(hashOfProp, player.pos.x, player.pos.y, player.pos.z, true, true, true);
+        let newObject = natives.createObject(hashOfProp, player.pos.x, player.pos.y, player.pos.z, true, true, true);
 
         // Release memory for model
         natives.setModelAsNoLongerNeeded(hashOfProp);
         
-        var boneIndex = natives.getPedBoneIndex(player.scriptID, Number(boneId)); 
+        let boneIndex = natives.getPedBoneIndex(player.scriptID, Number(boneId)); 
 
         if (newObject) {
             // Hide weapon before attaching object
@@ -101,14 +109,19 @@ function attachRegisteredObjectToLocalPlayerSynced(objectName, objectData) {
 
 function detachObjectFromLocalPlayerSynced() {
     removeObjectFromPlayer(alt.Player.local);
+    resetAnimationOnLocalPlayer();
     alt.emitServer('objectAttacher:detachedObject'); 
 }
 
-function resetAnimationOnLocalPlayer() {
-    try {
-        natives.clearPedTasks(alt.Player.local.scriptID);
-    } catch(e) {
-        outputMessage(e.message);
+function attachRegisteredObjectToLocalPlayerAnimated(objectName, detachObjectAfterAnimation) {
+    let registeredObject = getRegisteredObject(objectName);
+    if (registeredObject) {
+        attachRegisteredObjectToLocalPlayerSynced(objectName, registeredObject);
+        playAnimationSequenceOnLocalPlayer(registeredObject.enterAnimation, registeredObject.exitAnimation, () => {
+            if (detachObjectAfterAnimation) {
+                detachObjectFromLocalPlayerSynced();
+            }
+        });
     }
 }
 
@@ -183,10 +196,10 @@ alt.setInterval(() => {
                 return;
             }
                 
-            var objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');
+            let objectOfRemotePlayer = remotePlayer.getSyncedMeta('AttachedObject');
     
             if (objectOfRemotePlayer) {
-                var isRemotePlayerInRange = remotePlayer.scriptID && remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
+                let isRemotePlayerInRange = remotePlayer.scriptID && remotePlayer.pos.isInRange(alt.Player.local.pos, OBJECT_RANGE);
     
                 // Object not created yet?
                 if (!currentExistingObjects[remotePlayer.id]) {
@@ -211,15 +224,11 @@ alt.setInterval(() => {
 }, CHECK_INTERVAL);
 
 alt.on('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnimation) => {
-    var registeredObject = getRegisteredObject(objectName);
-    if (registeredObject) {
-        attachRegisteredObjectToLocalPlayerSynced(objectName, registeredObject);
-        playAnimationSequenceOnLocalPlayer(registeredObject.enterAnimation, registeredObject.exitAnimation, () => {
-            if (detachObjectAfterAnimation) {
-                detachObjectFromLocalPlayerSynced();
-            }
-        });
-    }
+    attachRegisteredObjectToLocalPlayerAnimated(objectName, detachObjectAfterAnimation);
+});
+
+alt.onServer('objectAttacher:attachObjectAnimated', (objectName, detachObjectAfterAnimation) => {
+    attachRegisteredObjectToLocalPlayerAnimated(objectName, detachObjectAfterAnimation);
 });
 
 alt.on('objectAttacher:attachObject', (objectName) => {
