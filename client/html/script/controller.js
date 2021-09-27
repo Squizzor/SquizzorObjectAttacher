@@ -121,7 +121,3 @@ var controller = new Vue({
 alt.on('objectAttacher:debug:setRegisteredObjects', (registeredObjects) => {
     controller.registeredObjects = registeredObjects;
 });
-
-window.onload = function(){
-    alt.emit('objectAttacher:debug:requestRegisteredObjects');
-};

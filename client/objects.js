@@ -17,8 +17,8 @@ const registeredObjects = {
         enterAnimation: {dict: 'amb@code_human_wander_eating_donut@male@idle_a', name: 'idle_c', flag: 49, durationMs: 5000 },
         exitAnimation: {dict: '', name: '', flag: 49, durationMs: 0 } },
     'fishing-rod': { objectName: 'prop_fishing_rod_01', boneId: 60309, position: { x: 0, y: -0.01, z: 0.01, }, rotation: { x: -180, y: -185, z: -175},
-        enterAnimation: { dict: 'amb@world_human_stand_fishing@idle_a', name: 'idle_c', flag: 49, durationMs: 0 },
-        exitAnimation: { dict: '', name: '', flag: 49, durationMs: 0 } }
+        enterAnimation: { dict: 'amb@world_human_stand_fishing@idle_a', name: 'idle_c', flag: 15, durationMs: 0 },
+        exitAnimation: { dict: '', name: '', flag: 15, durationMs: 0 } }
 };
 
 export default registeredObjects;

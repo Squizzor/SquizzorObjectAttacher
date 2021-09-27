@@ -255,7 +255,7 @@ if (DEBUG_MODE) {
         natives.invalidateIdleCam();
     }, 2000);
 
-    mainView.on('objectAttacher:debug:requestRegisteredObjects', () => {
+    mainView.on('load', () => {
         mainView.emit('objectAttacher:debug:setRegisteredObjects', registeredObjects);
     });
 
