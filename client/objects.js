@@ -18,7 +18,10 @@ const registeredObjects = {
         exitAnimation: {dict: '', name: '', flag: 49, durationMs: 0 } },
     'fishing-rod': { objectName: 'prop_fishing_rod_01', boneId: 60309, position: { x: 0, y: -0.01, z: 0.01, }, rotation: { x: -180, y: -185, z: -175},
         enterAnimation: { dict: 'amb@world_human_stand_fishing@idle_a', name: 'idle_c', flag: 15, durationMs: 0 },
-        exitAnimation: { dict: '', name: '', flag: 15, durationMs: 0 } }
+        exitAnimation: { dict: '', name: '', flag: 15, durationMs: 0 } },
+    'cigarette': { objectName: 'ng_proc_cigarette01a', boneId: 58867, position: { x: 0.06, y: 0.01, z: -0.01, }, rotation: { x: 0, y: 255, z: 65},
+        enterAnimation: { dict: 'amb@world_human_aa_smoke@male@idle_a', name: 'idle_a', flag: 49, durationMs: 0 },
+        exitAnimation: { dict: '', name: '', flag: 49, durationMs: 0 } }
 };
 
 export default registeredObjects;
